@@ -667,7 +667,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
     unifiedPushState.activeInstance = registration.instance
     val result = JSObject()
     result.put("deviceToken", endpoint)
-    result.put("instance", UnifiedPushStateStore.INSTANCE)
+    result.put("instance", registration.instance)
     p256dh?.let { result.put("p256dh", it) }
     auth?.let { result.put("auth", it) }
     finishPushRegistrationSuccess(result)
@@ -703,7 +703,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
     val data = JSObject()
     data.put("message", content)
     data.put("transport", "unifiedpush")
-    data.put("instance", "default")
+    data.put("instance", instance)
     trigger("push-message", data)
   }
 
@@ -711,7 +711,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
     val data = JSObject()
     data.put("token", endpoint)
     data.put("provider", "unifiedpush")
-    data.put("instance", UnifiedPushStateStore.INSTANCE)
+    data.put("instance", unifiedPushState.activeInstance)
     data.put("mode", mode)
     p256dh?.let { data.put("p256dh", it) }
     auth?.let { data.put("auth", it) }

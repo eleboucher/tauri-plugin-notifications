@@ -43,14 +43,58 @@ pub async fn register_for_push_notifications<R: Runtime>(
     vapid: Option<String>,
     provider: Option<String>,
 ) -> Result<crate::models::PushNotificationResponse> {
-    #[cfg(mobile)]
+    #[cfg(target_os = "android")]
     return notification
         .register_for_push_notifications(vapid, provider)
         .await;
-    #[cfg(desktop)]
+    #[cfg(not(target_os = "android"))]
     {
-        let _ = provider;
+        validate_push_provider(provider.as_deref())?;
+        #[cfg(target_os = "ios")]
+        return notification
+            .register_for_push_notifications(vapid, provider)
+            .await;
+        #[cfg(desktop)]
         notification.register_for_push_notifications(vapid).await
+    }
+}
+
+#[cfg(not(target_os = "android"))]
+fn validate_push_provider(provider: Option<&str>) -> Result<()> {
+    let provider = provider.unwrap_or("auto");
+    #[cfg(target_os = "linux")]
+    let supported = provider == "auto" || provider == "unifiedpush";
+    #[cfg(not(target_os = "linux"))]
+    let supported = provider == "auto";
+
+    if supported {
+        Ok(())
+    } else {
+        Err(crate::Error::Io(std::io::Error::other(format!(
+            "Push provider '{provider}' is not supported on this platform"
+        ))))
+    }
+}
+
+#[cfg(all(test, not(target_os = "android")))]
+mod tests {
+    use super::validate_push_provider;
+
+    #[test]
+    fn auto_push_provider_is_supported() {
+        assert!(validate_push_provider(Some("auto")).is_ok());
+        assert!(validate_push_provider(None).is_ok());
+    }
+
+    #[test]
+    fn unsupported_push_provider_is_rejected() {
+        assert!(validate_push_provider(Some("fcm")).is_err());
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn unifiedpush_provider_is_supported_on_linux() {
+        assert!(validate_push_provider(Some("unifiedpush")).is_ok());
     }
 }
 

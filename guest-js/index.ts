@@ -477,6 +477,8 @@ type PushProvider = "auto" | "fcm" | "unifiedpush";
  * `deviceToken` is the APNs token on iOS and the UnifiedPush endpoint URL on
  * Android/Linux. Pass a base64url VAPID public key to register against a Web
  * Push distributor; `p256dh` and `auth` are then set on the result.
+ * Explicit provider selection is supported on Android. Linux also accepts
+ * `unifiedpush`; other platforms require `auto` and use their native provider.
  *
  * @returns A promise resolving to the {@link PushRegistration}.
  */
