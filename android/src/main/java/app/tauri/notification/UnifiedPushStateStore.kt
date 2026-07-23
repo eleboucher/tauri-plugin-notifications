@@ -13,6 +13,26 @@ internal class UnifiedPushStateStore(private val context: Context) {
   var activeInstance: String?
     get() = prefs.getString("push-instance", null) ?: INSTANCE
     set(value) = prefs.edit().putString("push-instance", value ?: INSTANCE).apply()
+  var endpoint: String?
+    get() = prefs.getString("up-endpoint", null)
+    set(value) = prefs.edit().putString("up-endpoint", value).apply()
+
+  fun clearRegistration() {
+    prefs.edit().remove("push-instance").remove("up-endpoint").apply()
+  }
+  fun instanceForRegistration(): String {
+    val current = activeInstance
+    if (current != null && current != INSTANCE) {
+      try { org.unifiedpush.android.connector.UnifiedPush.unregister(context, current) } catch (_: Exception) {}
+      activeInstance = INSTANCE
+    }
+    return INSTANCE
+  }
+  fun ensureExplicitInstance() {
+    if (prefs.getString("push-instance", null) == null) {
+      activeInstance = INSTANCE
+    }
+  }
   fun setUnifiedPushActive() { activeProvider = "unifiedpush" }
 
   companion object {

@@ -477,7 +477,7 @@ class NotificationPlugin(private val activity: Activity): Plugin(activity) {
     pendingPushRegistration = PushRegistration(
       requestedVapid,
       provider,
-      if (provider == "fcm") null else "sable-registration-${UUID.randomUUID()}",
+      if (provider == "fcm") null else unifiedPushState.instanceForRegistration(),
       distributor,
       PushRegistrationPhase.PERMISSION,
       invoke,
